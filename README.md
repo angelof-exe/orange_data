@@ -1,4 +1,4 @@
-# 🍊 OrangeData - Dashboard di Monitoraggio Settore Primario
+# 🍊 OrangeData - Dashboard per il monitoraggio del Settore Primario in Sicilia
 
 Questa dashboard interattiva utilizza Dash e Plotly per visualizzare dati ambientali e statistici sul settore primario.
 
