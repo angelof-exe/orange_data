@@ -10,7 +10,7 @@ from istat_data import load_istat_data
 df_env = get_data()
 df_istat = load_istat_data()
 
-# Inizializzazione dell'app Dash con Bootstrap e stile personalizzato
+# Inizializzazione dell'app Dash con Bootstrap 
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.SANDSTONE])
 
 # Stile personalizzato
@@ -24,17 +24,17 @@ CARD_STYLE = {
 
 app.layout = dbc.Container(
     [
-        html.Div(style={"backgroundColor": "#FFE0B2", "minHeight": "100vh", "padding": "20px", }, children=[
+        html.Div(style={"backgroundColor": "#FFE0B2", "minHeight": "100vh", "padding": "20px"}, children=[
             
-            # Navbar
+            # Navbar migliorata
             dbc.NavbarSimple(
-                brand="OrangeData",
-                color="#E65100",
+                brand="OrangeData - Monitoraggio Settore Primario",
+                color="dark",
                 dark=True,
                 className="mb-4"
             ),
 
-            # Grafici in Card con stile personalizzato
+            # Grafici esistenti
             dbc.Row([
                 dbc.Col(dbc.Card([dcc.Graph(id='grafico-temperatura')], style=CARD_STYLE), md=6),
                 dbc.Col(dbc.Card([dcc.Graph(id='grafico-umidita')], style=CARD_STYLE), md=6),
@@ -48,6 +48,16 @@ app.layout = dbc.Container(
             dbc.Row([
                 dbc.Col(dbc.Card([dcc.Graph(id='grafico-attrazione')], style=CARD_STYLE), md=6),
                 dbc.Col(dbc.Card([dcc.Graph(id='grafico-poverta')], style=CARD_STYLE), md=6),
+            ]),
+
+            # Nuovi grafici aggiunti
+            dbc.Row([
+                dbc.Col(dbc.Card([dcc.Graph(id='grafico-produttivita')], style=CARD_STYLE), md=6),
+                dbc.Col(dbc.Card([dcc.Graph(id='grafico-precipitazioni')], style=CARD_STYLE), md=6),
+            ]),
+
+            dbc.Row([
+                dbc.Col(dbc.Card([dcc.Graph(id='grafico-disoccupazione')], style=CARD_STYLE), md=6),
             ]),
 
             # Aggiornamento automatico
@@ -65,27 +75,47 @@ app.layout = dbc.Container(
         Output('grafico-popolazione', 'figure'),
         Output('grafico-attrazione', 'figure'),
         Output('grafico-poverta', 'figure'),
+        Output('grafico-produttivita', 'figure'),
+        Output('grafico-precipitazioni', 'figure'),
+        Output('grafico-disoccupazione', 'figure'),
     ],
     [Input('interval-component', 'n_intervals')]
 )
 def update_graphs(n):
     fig_temp = px.line(df_env, x='Data', y='Temperatura (°C)', title='Temperatura Giornaliera')
+    fig_temp.update_layout(title={'text': '<b>Temperatura Giornaliera</b>'})
+
     fig_umid = px.line(df_env, x='Data', y='Umidità (%)', title='Umidità Giornaliera')
+    fig_umid.update_layout(title={'text': '<b>Umidità Giornaliera</b>'})
 
     fig_imprese = px.bar(df_istat, x='Provincia', y=['Imprese Commercio', 'Imprese Agricoltura'], 
                          title='Distribuzione delle Imprese per Settore', barmode='group')
+    fig_imprese.update_layout(title={'text': '<b>Distribuzione delle Imprese per Settore</b>'})
     
     fig_pop = px.bar(df_istat, x='Provincia', y=['Popolazione 0-14', 'Popolazione 65+'], 
                      title='Distribuzione della Popolazione per Fascia di Età', barmode='group')
+    fig_pop.update_layout(title={'text': '<b>Distribuzione della Popolazione per Fascia di Età</b>'})
     
     fig_attrazione = px.scatter(df_istat, x='Provincia', y='Attrazione (%)', 
                                 size='Autocontenimento (%)', color='Autocontenimento (%)',
                                 title='Indice di Attrazione e Autocontenimento del Lavoro')
+    fig_attrazione.update_layout(title={'text': '<b>Indice di Attrazione e Autocontenimento del Lavoro</b>'})
     
     fig_poverta = px.bar(df_istat, x='Provincia', y='Povertà Relativa (%)', 
                          title='Incidenza della Povertà Relativa per Provincia')
+    fig_poverta.update_layout(title={'text': '<b>Incidenza della Povertà Relativa per Provincia</b>'})
+    
+    fig_produttivita = px.line(df_env, x='Data', y='Indice Produttività', title='Indice di Produttività Agricola')
+    fig_produttivita.update_layout(title={'text': '<b>Indice di Produttività Agricola</b>'})
 
-    return fig_temp, fig_umid, fig_imprese, fig_pop, fig_attrazione, fig_poverta
+    fig_prec = px.line(df_env, x='Data', y='Precipitazioni (mm)', title='Precipitazioni Giornaliere')
+    fig_prec.update_layout(title={'text': '<b>Precipitazioni Giornaliere</b>'})
+
+    fig_disoccupazione = px.bar(df_istat, x='Provincia', y='Disoccupazione Settore Primario (%)', 
+                                title='Disoccupazione Settore Primario')
+    fig_disoccupazione.update_layout(title={'text': '<b>Disoccupazione Settore Primario</b>'})
+
+    return fig_temp, fig_umid, fig_imprese, fig_pop, fig_attrazione, fig_poverta, fig_produttivita, fig_prec, fig_disoccupazione
 
 if __name__ == '__main__':
     app.run_server(debug=True)
